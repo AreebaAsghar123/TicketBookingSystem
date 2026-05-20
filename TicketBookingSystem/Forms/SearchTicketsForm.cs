@@ -1,5 +1,4 @@
 ﻿using System;
-using System;
 using System.Data.SQLite;
 using System.Windows.Forms;
 using TicketBookingSystem.Database;
@@ -16,7 +15,7 @@ namespace TicketBookingSystem.Forms
 
         private void SearchTicketsForm_Load(object sender, EventArgs e)
         {
-            // Grid columns set karo
+            // DataGridView columns define karo
             dgvTickets.Columns.Clear();
             dgvTickets.Columns.Add("TicketID", "ID");
             dgvTickets.Columns.Add("Route", "Route");
@@ -27,19 +26,22 @@ namespace TicketBookingSystem.Forms
             dgvTickets.Columns.Add("Fare", "Fare (Rs.)");
             dgvTickets.Columns.Add("Seats", "Available Seats");
 
+            // TicketID column hide karo — sirf internally use hoga
             dgvTickets.Columns["TicketID"].Visible = false;
 
-            // Load all tickets
+            // Form load hone par saare available tickets dikhao
             LoadTickets("", "", "", "All");
         }
 
         private void btnSearch_Click(object sender, EventArgs e)
         {
+            // Search filters ki values lo
             string from = cmbFrom.SelectedItem?.ToString() ?? "";
             string to = cmbTo.SelectedItem?.ToString() ?? "";
             string date = dtpDate.Value.ToString("yyyy-MM-dd");
             string category = cmbCategory.SelectedItem?.ToString() ?? "All";
 
+            // Filter ke mutabiq tickets load karo
             LoadTickets(from, to, date, category);
         }
 
@@ -52,6 +54,7 @@ namespace TicketBookingSystem.Forms
             {
                 using (var conn = DatabaseHelper.GetConnection())
                 {
+                    // Base query — sirf available seats wale tickets dikhao
                     string sql = @"
                         SELECT t.TicketID,
                                r.Source || ' → ' || r.Destination AS Route,
@@ -62,6 +65,7 @@ namespace TicketBookingSystem.Forms
                         JOIN Routes r ON t.RouteID = r.RouteID
                         WHERE t.AvailableSeats > 0";
 
+                    // Dynamic filters add karo jo user ne select kiye hain
                     if (!string.IsNullOrEmpty(from))
                         sql += " AND r.Source = @from";
                     if (!string.IsNullOrEmpty(to))
@@ -73,6 +77,7 @@ namespace TicketBookingSystem.Forms
 
                     using (var cmd = new SQLiteCommand(sql, conn))
                     {
+                        // Parameters safely add karo — SQL injection se bachne ke liye
                         if (!string.IsNullOrEmpty(from))
                             cmd.Parameters.AddWithValue("@from", from);
                         if (!string.IsNullOrEmpty(to))
@@ -87,12 +92,14 @@ namespace TicketBookingSystem.Forms
                             int count = 0;
                             while (reader.Read())
                             {
+                                // Har ticket ko grid mein add karo
                                 dgvTickets.Rows.Add(
                                     reader[0], reader[1], reader[2],
                                     reader[3], reader[4], reader[5],
                                     "Rs. " + reader[6], reader[7]);
                                 count++;
                             }
+                            // Total results dikhao
                             lblResults.Text =
                                 $"Available Tickets: {count} found";
                         }
@@ -108,6 +115,7 @@ namespace TicketBookingSystem.Forms
 
         private void btnBook_Click(object sender, EventArgs e)
         {
+            // Pehle check karo ke koi ticket selected hai
             if (dgvTickets.SelectedRows.Count == 0)
             {
                 MessageBox.Show("Pehle koi ticket select karein!",
@@ -116,8 +124,10 @@ namespace TicketBookingSystem.Forms
                 return;
             }
 
+            // Selected row se ticket details lo
             var row = dgvTickets.SelectedRows[0];
 
+            // BookingForm ko selected ticket ki details pass karo
             BookingForm booking = new BookingForm();
             booking.TicketID = Convert.ToInt32(
                 row.Cells["TicketID"].Value);
@@ -129,15 +139,16 @@ namespace TicketBookingSystem.Forms
                 row.Cells["Fare"].Value.ToString()
                 .Replace("Rs. ", ""));
             booking.AvailableSeats = Convert.ToInt32(
-                row.Cells["Seats"].Value); // ← Naya add hua
+                row.Cells["Seats"].Value);
             booking.ShowDialog();
 
-            // Refresh tickets after booking
+            // Booking ke baad tickets refresh karo — updated seats dikhao
             LoadTickets("", "", "", "All");
         }
 
         private void btnBack_Click(object sender, EventArgs e)
         {
+            // Dashboard par wapas jao
             this.Close();
         }
     }

@@ -1,0 +1,8 @@
+﻿GitHub Repository Link:
+https://github.com/AreebaAsghar123/TicketBookingSystem.git
+
+Student Name: Areeba Asghar
+AG Number: 2024-AG-5387
+Degree: BSc Computer Science
+University: University of Agriculture Faisalabad
+Project: Online Ticket Booking System (Bus/Train)
