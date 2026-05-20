@@ -1,0 +1,122 @@
+# Deployment Guide
+# Online Ticket Booking System (Bus/Train)
+# Developed by: Areeba Asghar | AG: 2024-AG-5387
+
+## System Requirements
+- Operating System: Windows 7 / 8 / 10 / 11
+- .NET Framework: 4.7.2 or higher
+- IDE: Visual Studio 2019 or 2022
+- Database: SQLite (installed via NuGet)
+- RAM: Minimum 2 GB
+- Storage: Minimum 500 MB free space
+
+## Prerequisites
+Before running the application, ensure the following are installed:
+1. Visual Studio 2019 or 2022
+2. .NET Framework 4.7.2 or higher
+3. Git (for cloning the repository)
+
+## Installation Steps
+
+### Step 1: Clone the Repository
+Open Command Prompt and run:
+git clone https://github.com/AreebaAsghar123/TicketBookingSystem.git
+
+### Step 2: Open the Project
+1. Navigate to the cloned folder
+2. Double click on TicketBookingSystem.sln
+3. Visual Studio will open the project
+
+### Step 3: Install Required NuGet Package
+1. Go to Tools → NuGet Package Manager → Package Manager Console
+2. Run the following command:
+   Install-Package System.Data.SQLite
+3. Wait for installation to complete
+
+### Step 4: Build the Project
+1. Press Ctrl + Shift + B to build
+2. Ensure there are no build errors
+
+### Step 5: Run the Application
+1. Press F5 or click the Start button
+2. The Login Form will appear
+
+## Database Configuration
+- Database is created automatically on first run
+- Database file name: TicketDB.db
+- Database location: bin/Debug/TicketDB.db
+- No manual database setup is required
+- To reset the database: simply delete TicketDB.db and restart the app
+
+## Default Login Credentials
+
+Admin Account:
+Email:    admin@ticketsystem.com
+Password: Admin@123
+
+Note: Admin can manage routes and view all bookings.
+Passengers can register new accounts from the Login screen.
+
+## Application Features
+1. User Registration and Login (Role-based)
+2. Search Tickets by Source, Destination, Date, and Category
+3. Book Tickets with Seat Selection
+4. Payment Processing (Cash, Debit Card, Credit Card, Mobile Wallet)
+5. Booking History with Cancellation Option
+6. Admin Panel for Route and Booking Management
+7. Promo Code Support (SAVE10 = 10% off, SAVE20 = 20% off)
+
+## Project Structure
+TicketBookingSystem/
+├── Database/
+│   ├── BaseRepository.cs
+│   ├── DbConnections.cs
+│   ├── DatabaseHelper.cs
+│   ├── UserDB.cs
+│   ├── BookingDB.cs
+│   └── TicketDB.cs
+├── Forms/
+│   ├── LoginForm.cs
+│   ├── RegisterForm.cs
+│   ├── MainDashboard.cs
+│   ├── SearchTicketsForm.cs
+│   ├── BookingForm.cs
+│   ├── BookingHistoryForm.cs
+│   └── AdminPanelForm.cs
+├── Models/
+│   ├── User.cs
+│   └── Session.cs
+├── Program.cs
+├── DEPLOYMENT.md
+└── REPOSITORY.txt
+
+## Troubleshooting
+
+Problem: SQLite error on startup
+Solution: Reinstall NuGet package
+          Tools → NuGet → Install-Package System.Data.SQLite
+
+Problem: Database not found
+Solution: Delete TicketDB.db file and restart the application
+          It will be recreated automatically
+
+Problem: Build errors
+Solution: Check that .NET Framework 4.7.2 is installed
+          Ensure all NuGet packages are restored
+
+Problem: Login not working
+Solution: Use default admin credentials
+          Email: admin@ticketsystem.com
+          Password: Admin@123
+
+## Git Repository
+Repository Link: https://github.com/AreebaAsghar123/TicketBookingSystem
+Branch: master
+Total Commits: Regular commits with meaningful messages
+
+## Contact Information
+Student: Areeba Asghar
+AG Number: 2024-AG-5387
+Degree: BSc Computer Science
+University: University of Agriculture Faisalabad
+Supervisor: Dr. Qamar
