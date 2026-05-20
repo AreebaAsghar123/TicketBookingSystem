@@ -7,6 +7,10 @@ using TicketBookingSystem.Models;
 
 namespace TicketBookingSystem.Forms
 {
+    /// <summary>
+    /// BookingHistoryForm — User ki saari bookings yahan dikhti hain
+    /// Active bookings green aur Cancelled bookings red color mein dikhti hain
+    /// </summary>
     public partial class BookingHistoryForm : Form
     {
         public BookingHistoryForm()
@@ -14,8 +18,12 @@ namespace TicketBookingSystem.Forms
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Form load hone par columns set karta hai aur bookings load karta hai
+        /// </summary>
         private void BookingHistoryForm_Load(object sender, EventArgs e)
         {
+            // DataGridView columns define karo
             dgvBookings.Columns.Clear();
             dgvBookings.Columns.Add("BookingID", "ID");
             dgvBookings.Columns.Add("Route", "Route");
@@ -27,11 +35,16 @@ namespace TicketBookingSystem.Forms
             dgvBookings.Columns.Add("Status", "Status");
             dgvBookings.Columns.Add("BookDate", "Booked On");
 
+            // BookingID hide karo — sirf internally use hoga cancel ke liye
             dgvBookings.Columns["BookingID"].Visible = false;
 
             LoadBookings();
         }
 
+        /// <summary>
+        /// Current logged in user ki saari bookings database se load karta hai
+        /// Active = green color | Cancelled = red color
+        /// </summary>
         private void LoadBookings()
         {
             dgvBookings.Rows.Clear();
@@ -40,6 +53,8 @@ namespace TicketBookingSystem.Forms
             {
                 using (var conn = DatabaseHelper.GetConnection())
                 {
+                    // Bookings, Tickets, Routes aur Payments JOIN kiye hain
+                    // LEFT JOIN Payments — agar payment record na ho to bhi row aaye
                     string sql = @"
                         SELECT b.BookingID,
                                r.Source || ' → ' || r.Destination,
@@ -55,6 +70,7 @@ namespace TicketBookingSystem.Forms
 
                     using (var cmd = new SQLiteCommand(sql, conn))
                     {
+                        // Sirf current user ki bookings laao
                         cmd.Parameters.AddWithValue("@uid", Session.CurrentUser.UserID);
 
                         using (var reader = cmd.ExecuteReader())
@@ -68,17 +84,19 @@ namespace TicketBookingSystem.Forms
                                     "Rs. " + reader[5],
                                     reader[6], reader[7], reader[8]);
 
-                                // Status color
+                                // Status ke hisaab se row ka color set karo
+                                // Cancelled = light red | Active = light green
                                 string status = reader[7].ToString();
                                 if (status == "Cancelled")
                                     dgvBookings.Rows[rowIndex].DefaultCellStyle.BackColor =
-                                        Color.FromArgb(255, 220, 220);
+                                        Color.FromArgb(255, 220, 220); // Light red
                                 else
                                     dgvBookings.Rows[rowIndex].DefaultCellStyle.BackColor =
-                                        Color.FromArgb(220, 255, 220);
+                                        Color.FromArgb(220, 255, 220); // Light green
 
                                 count++;
                             }
+                            // Total bookings count dikhao
                             lblCount.Text = $"Total Bookings: {count}";
                         }
                     }
@@ -91,8 +109,13 @@ namespace TicketBookingSystem.Forms
             }
         }
 
+        /// <summary>
+        /// Selected booking cancel karta hai
+        /// Booking status Cancelled set karta hai aur seat wapas available karta hai
+        /// </summary>
         private void btnCancelBooking_Click(object sender, EventArgs e)
         {
+            // Pehle check karo koi row select hai ya nahi
             if (dgvBookings.SelectedRows.Count == 0)
             {
                 MessageBox.Show("Pehle koi booking select karein!",
@@ -100,6 +123,7 @@ namespace TicketBookingSystem.Forms
                 return;
             }
 
+            // Already cancelled booking dobara cancel nahi ho sakti
             string status = dgvBookings.SelectedRows[0].Cells["Status"].Value.ToString();
             if (status == "Cancelled")
             {
@@ -108,6 +132,7 @@ namespace TicketBookingSystem.Forms
                 return;
             }
 
+            // User se confirm karo
             var result = MessageBox.Show(
                 "Kya aap yeh booking cancel karna chahte hain?",
                 "Confirm Cancel",
@@ -123,7 +148,7 @@ namespace TicketBookingSystem.Forms
                 {
                     using (var conn = DatabaseHelper.GetConnection())
                     {
-                        // Status update karo
+                        // Step 1: Booking status Cancelled set karo
                         string update = "UPDATE Bookings SET Status='Cancelled' WHERE BookingID=@id";
                         using (var cmd = new SQLiteCommand(update, conn))
                         {
@@ -131,7 +156,7 @@ namespace TicketBookingSystem.Forms
                             cmd.ExecuteNonQuery();
                         }
 
-                        // Seat wapas available karo
+                        // Step 2: TicketID nikalo taake seat wapas de sakein
                         string getTicket = "SELECT TicketID FROM Bookings WHERE BookingID=@id";
                         int ticketID;
                         using (var cmd = new SQLiteCommand(getTicket, conn))
@@ -140,6 +165,7 @@ namespace TicketBookingSystem.Forms
                             ticketID = Convert.ToInt32(cmd.ExecuteScalar());
                         }
 
+                        // Step 3: Cancelled seat wapas available karo
                         string updateSeats = @"UPDATE Tickets 
                             SET AvailableSeats = AvailableSeats + 1 
                             WHERE TicketID = @tid";
@@ -153,6 +179,7 @@ namespace TicketBookingSystem.Forms
                     MessageBox.Show("Booking cancel ho gayi! Refund process ho raha hai.",
                         "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
+                    // Grid refresh karo updated status dikhane ke liye
                     LoadBookings();
                 }
                 catch (Exception ex)
@@ -163,6 +190,9 @@ namespace TicketBookingSystem.Forms
             }
         }
 
+        /// <summary>
+        /// Back button — form band karta hai
+        /// </summary>
         private void btnBack_Click(object sender, EventArgs e)
         {
             this.Close();

@@ -1,4 +1,6 @@
-﻿namespace TicketBookingSystem.Forms
+﻿using System;
+
+namespace TicketBookingSystem.Forms
 {
     partial class BookingHistoryForm
     {

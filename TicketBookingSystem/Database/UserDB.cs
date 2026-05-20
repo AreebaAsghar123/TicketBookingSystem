@@ -4,9 +4,14 @@ using TicketBookingSystem.Models;
 
 namespace TicketBookingSystem.Database
 {
+    /// <summary>
+    /// User related database operations — Login aur Register
+    /// </summary>
     public class UserDB : BaseRepository
     {
-        // USER LOGIN
+        /// <summary>
+        /// User ko email aur password se login karta hai
+        /// </summary>
         public User LoginUser(string email, string password)
         {
             string sql = @"SELECT UserID, FullName, Email, Phone, Role
@@ -35,7 +40,9 @@ namespace TicketBookingSystem.Database
             return null;
         }
 
-        // USER REGISTER
+        /// <summary>
+        /// Naya user register karta hai — duplicate email check karta hai
+        /// </summary>
         public bool RegisterUser(string name, string email,
             string phone, string password)
         {
@@ -48,7 +55,7 @@ namespace TicketBookingSystem.Database
             long exists = (long)ExecuteScalar(check, checkParams);
             if (exists > 0) return false;
 
-            // Insert karo
+            // Naya user insert karo
             string sql = @"INSERT INTO Users 
                           (FullName, Email, Phone, Password, Role, CreatedDate)
                           VALUES

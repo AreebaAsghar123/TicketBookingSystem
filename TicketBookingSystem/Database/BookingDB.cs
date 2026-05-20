@@ -4,12 +4,18 @@ using System.Data.SQLite;
 
 namespace TicketBookingSystem.Database
 {
+    /// <summary>
+    /// Booking related database operations — Add, Get, Cancel
+    /// </summary>
     public class BookingDB : BaseRepository
     {
-        // BOOKING KARO
+        /// <summary>
+        /// Naya booking record database mein save karta hai
+        /// </summary>
         public bool AddBooking(int userId, int ticketId,
             string seatNumber, string passengerName, double fare)
         {
+            // Booking status default 'Active' set hoti hai
             string sql = @"INSERT INTO Bookings
                           (UserID, TicketID, SeatNumber, PassengerName,
                           BookingDate, Status, TotalFare)
@@ -17,8 +23,8 @@ namespace TicketBookingSystem.Database
                           (@uid, @tid, @seat, @name, @date, 'Active', @fare)";
 
             SQLiteParameter[] parameters = {
-                new SQLiteParameter("@uid", userId),
-                new SQLiteParameter("@tid", ticketId),
+                new SQLiteParameter("@uid",  userId),
+                new SQLiteParameter("@tid",  ticketId),
                 new SQLiteParameter("@seat", seatNumber),
                 new SQLiteParameter("@name", passengerName),
                 new SQLiteParameter("@date",
@@ -29,9 +35,13 @@ namespace TicketBookingSystem.Database
             return ExecuteNonQuery(sql, parameters) > 0;
         }
 
-        // USER KI SAARI BOOKINGS LAO
+        /// <summary>
+        /// Specific user ki saari bookings laata hai
+        /// Latest booking pehle dikhata hai
+        /// </summary>
         public List<object[]> GetUserBookings(int userId)
         {
+            // Tickets aur Routes se JOIN karke poori detail laata hai
             string sql = @"SELECT b.BookingID, r.Source, r.Destination,
                           t.DepartureDate, t.DepartureTime,
                           b.SeatNumber, b.TotalFare, b.Status
@@ -60,9 +70,12 @@ namespace TicketBookingSystem.Database
             return list;
         }
 
-        // BOOKING CANCEL KARO
+        /// <summary>
+        /// Booking cancel karta hai — Status 'Cancelled' set karta hai
+        /// </summary>
         public bool CancelBooking(int bookingId)
         {
+            // Booking delete nahi karte — sirf status update karte hain
             string sql = @"UPDATE Bookings 
                           SET Status = 'Cancelled'
                           WHERE BookingID = @id";
@@ -74,9 +87,12 @@ namespace TicketBookingSystem.Database
             return ExecuteNonQuery(sql, parameters) > 0;
         }
 
-        // ADMIN — SAARI BOOKINGS LAO
+        /// <summary>
+        /// Admin ke liye saari bookings laata hai — sabhi users ki
+        /// </summary>
         public List<object[]> GetAllBookings()
         {
+            // Users, Tickets aur Routes teeno se JOIN kiya hai
             string sql = @"SELECT b.BookingID, u.FullName,
                           r.Source, r.Destination,
                           t.DepartureDate, b.SeatNumber,
