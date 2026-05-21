@@ -5,12 +5,12 @@ using TicketBookingSystem.Models;
 namespace TicketBookingSystem.Database
 {
     /// <summary>
-    /// User related database operations — Login aur Register
+    /// User related database operations — Login and Register
     /// </summary>
     public class UserDB : BaseRepository
     {
         /// <summary>
-        /// User ko email aur password se login karta hai
+        /// Logs in the user using email and password
         /// </summary>
         public User LoginUser(string email, string password)
         {
@@ -41,12 +41,12 @@ namespace TicketBookingSystem.Database
         }
 
         /// <summary>
-        /// Naya user register karta hai — duplicate email check karta hai
+        /// Registers a new user — checks for duplicate email
         /// </summary>
         public bool RegisterUser(string name, string email,
             string phone, string password)
         {
-            // Pehle check karo email duplicate to nahi
+            // First, check whether the email is duplicate or not
             string check = "SELECT COUNT(*) FROM Users WHERE Email=@email";
             SQLiteParameter[] checkParams = {
                 new SQLiteParameter("@email", email)
@@ -55,7 +55,7 @@ namespace TicketBookingSystem.Database
             long exists = (long)ExecuteScalar(check, checkParams);
             if (exists > 0) return false;
 
-            // Naya user insert karo
+            //  insert new user  
             string sql = @"INSERT INTO Users 
                           (FullName, Email, Phone, Password, Role, CreatedDate)
                           VALUES

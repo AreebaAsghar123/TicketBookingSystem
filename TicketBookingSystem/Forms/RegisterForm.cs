@@ -6,6 +6,10 @@ using TicketBookingSystem.Models;
 
 namespace TicketBookingSystem.Forms
 {
+    /// <summary>
+    /// RegisterForm — Allows new users to create an account
+    /// Includes input validation and password strength indicator
+    /// </summary>
     public partial class RegisterForm : Form
     {
         public RegisterForm()
@@ -13,76 +17,112 @@ namespace TicketBookingSystem.Forms
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Validates all input fields and registers the user in the database
+        /// </summary>
         private void btnRegister_Click(object sender, EventArgs e)
         {
-            // Form fields se input lo aur trim karo
+            // Retrieve and trim all input field values
             string name = txtName.Text.Trim();
             string email = txtEmail.Text.Trim();
             string phone = txtPhone.Text.Trim();
             string password = txtPassword.Text.Trim();
             string confirm = txtConfirm.Text.Trim();
 
-            // Naam validation — khali nahi hona chahiye
+            // Name field cannot be empty
             if (string.IsNullOrEmpty(name))
-            { lblError.Text = "⚠ Naam bharein!"; lblError.Visible = true; return; }
+            {
+                lblError.Text = "⚠ Please enter your name!";
+                lblError.Visible = true;
+                return;
+            }
 
-            // Email validation — valid format hona chahiye
+            // Email must be in valid format containing '@'
             if (string.IsNullOrEmpty(email) || !email.Contains("@"))
-            { lblError.Text = "⚠ Valid email bharein!"; lblError.Visible = true; return; }
+            {
+                lblError.Text = "⚠ Please enter a valid email address!";
+                lblError.Visible = true;
+                return;
+            }
 
-            // Phone validation — kam se kam 10 digits hone chahiye
+            // Phone number must be at least 10 digits
             if (string.IsNullOrEmpty(phone) || phone.Length < 10)
-            { lblError.Text = "⚠ Valid phone number bharein!"; lblError.Visible = true; return; }
+            {
+                lblError.Text = "⚠ Please enter a valid phone number!";
+                lblError.Visible = true;
+                return;
+            }
 
-            // Password validation — minimum 6 characters
+            // Password must be at least 6 characters long
             if (password.Length < 6)
-            { lblError.Text = "⚠ Password 6 characters ka hona chahiye!"; lblError.Visible = true; return; }
+            {
+                lblError.Text = "⚠ Password must be at least 6 characters!";
+                lblError.Visible = true;
+                return;
+            }
 
-            // Confirm password check — dono passwords match hone chahiye
+            // Confirm password must match the original password
             if (password != confirm)
-            { lblError.Text = "⚠ Passwords match nahi kar rahe!"; lblError.Visible = true; return; }
+            {
+                lblError.Text = "⚠ Passwords do not match!";
+                lblError.Visible = true;
+                return;
+            }
 
-            // Saari validations pass — database mein user register karo
-            bool success = DatabaseHelper.RegisterUser(name, email, phone, password);
+            // All validations passed — register user in the database
+            bool success = DatabaseHelper.RegisterUser(
+                name, email, phone, password);
+
             if (success)
             {
-                // Registration successful — user ko notify karo aur form band karo
-                MessageBox.Show("Account ban gaya! 🎉 Ab login karein.",
-                    "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                // Registration successful — notify user and close form
+                MessageBox.Show(
+                    "Account created successfully! 🎉 Please login.",
+                    "Success",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
                 this.Close();
             }
         }
 
+        /// <summary>
+        /// Closes the registration form without saving
+        /// </summary>
         private void btnCancel_Click(object sender, EventArgs e)
         {
-            // Registration cancel — form band karo
             this.Close();
         }
 
+        /// <summary>
+        /// Checks password strength in real-time as user types
+        /// Weak: less than 6 chars | Medium: 6+ chars | Strong: has uppercase and number
+        /// </summary>
         private void txtPassword_TextChanged(object sender, EventArgs e)
         {
             string pwd = txtPassword.Text;
 
-            // Password khali ho to strength label hide karo
+            // Hide strength label when password field is empty
             if (pwd.Length == 0)
-            { lblStrength.Visible = false; return; }
-
-            // Password strength check karo aur label update karo
+            {
+                lblStrength.Visible = false;
+                return;
+            }
             else if (pwd.Length < 6)
             {
-                // 6 se kam characters — Weak
+                // Less than 6 characters — Weak password
                 lblStrength.Text = "● Weak";
                 lblStrength.ForeColor = System.Drawing.Color.Red;
             }
-            else if (Regex.IsMatch(pwd, "[A-Z]") && Regex.IsMatch(pwd, "[0-9]"))
+            else if (Regex.IsMatch(pwd, "[A-Z]") &&
+                     Regex.IsMatch(pwd, "[0-9]"))
             {
-                // Capital letter aur number dono hain — Strong
+                // Contains uppercase letter and number — Strong password
                 lblStrength.Text = "● Strong";
                 lblStrength.ForeColor = System.Drawing.Color.Green;
             }
             else
             {
-                // 6+ characters lekin capital ya number missing — Medium
+                // 6+ characters but missing uppercase or number — Medium
                 lblStrength.Text = "● Medium";
                 lblStrength.ForeColor = System.Drawing.Color.Orange;
             }

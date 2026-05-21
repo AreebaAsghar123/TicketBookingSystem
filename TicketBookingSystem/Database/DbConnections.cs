@@ -6,33 +6,33 @@ using System.Windows.Forms;
 namespace TicketBookingSystem.Database
 {
     /// <summary>
-    /// DbConnection Class — Database connection manage karta hai
-    /// Poori application mein yahi ek jagah se connection milta hai
+    /// DbConnection Class — Manages the database connection
+    /// Provides a single source of connection throughout the application
     /// </summary>
     public static class DbConnection
     {
-        // Database file ka path — application folder mein TicketDB.db
+        /// Database file path — TicketDB.db located in the application folder
         private static string dbPath = Path.Combine(
             Application.StartupPath, "TicketDB.db");
 
         /// <summary>
-        /// SQLite connection string — database file ka path contain karta hai
+        /// SQLite connection string — contains the path of the database file
         /// </summary>
         public static string ConnectionString =>
             $"Data Source={dbPath};Version=3;";
 
         /// <summary>
-        /// Database file ka poora path return karta hai
+        /// Returns the complete path of the database file
         /// </summary>
         public static string DbPath => dbPath;
 
         /// <summary>
-        /// Naya SQLite connection open karke return karta hai
-        /// Har database operation se pehle yeh call hota hai
+        /// Opens and returns a new SQLite connection
+        /// This is called before every database operation
         /// </summary>
         public static SQLiteConnection GetConnection()
         {
-            // Naya connection banao aur open karo
+            // Create and open a new connection
             var conn = new SQLiteConnection(ConnectionString);
             conn.Open();
             return conn;

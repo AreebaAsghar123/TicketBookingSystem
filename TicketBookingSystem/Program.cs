@@ -11,7 +11,7 @@ namespace TicketBookingSystem
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new LoginForm()); // Yahan LoginForm likho
+            Application.Run(new LoginForm()); //  LoginForm 
         }
     }
 }

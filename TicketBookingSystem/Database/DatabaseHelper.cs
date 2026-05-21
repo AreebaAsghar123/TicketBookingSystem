@@ -11,7 +11,7 @@ namespace TicketBookingSystem.Database
     /// </summary>
     public static class DatabaseHelper
     {
-        // Database file ka path — exe ke saath same folder mein
+        // Database file path — located in the same folder as the executable file
         private static string dbPath = Path.Combine(
             Application.StartupPath, "TicketDB.db");
 
@@ -25,7 +25,7 @@ namespace TicketBookingSystem.Database
         {
             try
             {
-                // Agar db file nahi hai to banao
+                // Create the database file if it does not exist
                 if (!File.Exists(dbPath))
                     SQLiteConnection.CreateFile(dbPath);
 
@@ -44,7 +44,7 @@ namespace TicketBookingSystem.Database
         }
 
         // ─────────────────────────────────────────────────────────────
-        // TABLES BANAO
+        // Create TABLES 
         // ─────────────────────────────────────────────────────────────
         private static void CreateTables(SQLiteConnection conn)
         {
@@ -128,7 +128,7 @@ namespace TicketBookingSystem.Database
         }
 
         // ─────────────────────────────────────────────────────────────
-        // DEFAULT ADMIN INSERT KARO (sirf ek baar)
+        // INSERT DEFAULT ADMIN INSERT  (just once)
         // ─────────────────────────────────────────────────────────────
         private static void InsertDefaultAdmin(SQLiteConnection conn)
         {
@@ -149,7 +149,7 @@ namespace TicketBookingSystem.Database
                         cmd2.ExecuteNonQuery();
                     }
 
-                    // Sample routes bhi add karo
+                    // Also add sample routes
                     InsertSampleData(conn);
                 }
             }
@@ -189,7 +189,7 @@ namespace TicketBookingSystem.Database
         }
 
         // ─────────────────────────────────────────────────────────────
-        // CONNECTION RETURN KARO (baaki classes use karengi)
+        // RETURN CONNECTION   (baaki classes use karengi)
         // ─────────────────────────────────────────────────────────────
         public static SQLiteConnection GetConnection()
         {
@@ -199,7 +199,7 @@ namespace TicketBookingSystem.Database
         }
 
         // ─────────────────────────────────────────────────────────────
-        // USER REGISTER KARO
+        //  REGISTER the USER
         // ─────────────────────────────────────────────────────────────
         public static bool RegisterUser(string name, string email,
             string phone, string password)
@@ -254,7 +254,7 @@ namespace TicketBookingSystem.Database
         }
 
         // ─────────────────────────────────────────────────────────────
-        // USER LOGIN VERIFY KARO
+        // VERIFY USER LOGIN  
         // ─────────────────────────────────────────────────────────────
         public static User LoginUser(string email, string password)
         {

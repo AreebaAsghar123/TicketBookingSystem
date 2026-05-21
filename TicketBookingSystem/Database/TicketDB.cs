@@ -6,7 +6,7 @@ namespace TicketBookingSystem.Database
 {
     public class TicketDB : BaseRepository
     {
-        // SAARI TICKETS LAO
+        // reterive all TICKETS 
         public List<object[]> GetAllTickets()
         {
             string sql = @"SELECT t.TicketID, r.Source, r.Destination,
@@ -66,7 +66,7 @@ namespace TicketBookingSystem.Database
             return list;
         }
 
-        // AVAILABLE SEATS UPDATE KARO
+        // UPDATE AVAILABLE SEATS  
         public bool UpdateAvailableSeats(int ticketId)
         {
             string sql = @"UPDATE Tickets 

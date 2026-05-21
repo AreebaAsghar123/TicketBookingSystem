@@ -8,21 +8,25 @@ namespace TicketBookingSystem.Forms
 {
     public partial class AdminPanelForm : Form
     {
+        // Stores the currently selected user's ID for update/delete operations
+        private int selectedUserID = 0;
+
         public AdminPanelForm()
         {
             InitializeComponent();
         }
 
+        // Fires when form loads — loads all data into grids
         private void AdminPanelForm_Load(object sender, EventArgs e)
         {
-            // Form load hone par routes aur bookings dono load karo
             LoadRoutes();
             LoadAllBookings();
+            LoadAllUsers();
         }
 
+        // ── Load all routes into the routes grid ──────────────────────
         private void LoadRoutes()
         {
-            // Routes grid columns define karo
             dgvRoutes.Columns.Clear();
             dgvRoutes.Columns.Add("RouteID", "ID");
             dgvRoutes.Columns.Add("Source", "Source");
@@ -31,7 +35,7 @@ namespace TicketBookingSystem.Forms
             dgvRoutes.Columns.Add("Duration", "Duration");
             dgvRoutes.Columns.Add("Category", "Category");
 
-            // RouteID hide karo — delete operation mein internally use hoga
+            // Hide ID column — used internally for delete
             dgvRoutes.Columns["RouteID"].Visible = false;
             dgvRoutes.Rows.Clear();
 
@@ -39,24 +43,25 @@ namespace TicketBookingSystem.Forms
             {
                 using (var conn = DatabaseHelper.GetConnection())
                 {
-                    // Database se saari routes fetch karo
-                    string sql = "SELECT RouteID, Source, Destination, Distance, Duration, Category FROM Routes";
+                    string sql = @"SELECT RouteID, Source, Destination, 
+                                  Distance, Duration, Category FROM Routes";
                     using (var cmd = new SQLiteCommand(sql, conn))
                     using (var reader = cmd.ExecuteReader())
                         while (reader.Read())
-                            dgvRoutes.Rows.Add(reader[0], reader[1], reader[2],
-                                               reader[3], reader[4], reader[5]);
+                            dgvRoutes.Rows.Add(
+                                reader[0], reader[1], reader[2],
+                                reader[3], reader[4], reader[5]);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error: " + ex.Message);
+                MessageBox.Show("Error loading routes: " + ex.Message);
             }
         }
 
+        // ── Load all bookings into the bookings grid ──────────────────
         private void LoadAllBookings()
         {
-            // All bookings grid columns define karo
             dgvAllBookings.Columns.Clear();
             dgvAllBookings.Columns.Add("BookingID", "ID");
             dgvAllBookings.Columns.Add("Passenger", "Passenger");
@@ -71,8 +76,7 @@ namespace TicketBookingSystem.Forms
             {
                 using (var conn = DatabaseHelper.GetConnection())
                 {
-                    // Saari bookings fetch karo — JOIN se route info bhi lo
-                    // Latest bookings pehle dikhane ke liye DESC order use kiya
+                    // Join Bookings with Tickets and Routes to get full info
                     string sql = @"
                         SELECT b.BookingID, b.PassengerName,
                                r.Source || ' → ' || r.Destination,
@@ -93,23 +97,84 @@ namespace TicketBookingSystem.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error: " + ex.Message);
+                MessageBox.Show("Error loading bookings: " + ex.Message);
             }
         }
 
-        private void btnAddRoute_Click(object sender, EventArgs e)
+        // ── Load all users into the users grid ────────────────────────
+        private void LoadAllUsers()
         {
-            // Form fields se input lo
-            string source = txtSource.Text.Trim();
-            string dest = txtDestination.Text.Trim();
-            string distance = txtDistance.Text.Trim();
-            string duration = txtDuration.Text.Trim();
-            string category = cmbRouteCategory.SelectedItem.ToString();
+            dgvUsers.Columns.Clear();
+            dgvUsers.Columns.Add("UserID", "ID");
+            dgvUsers.Columns.Add("FullName", "Full Name");
+            dgvUsers.Columns.Add("Email", "Email");
+            dgvUsers.Columns.Add("Phone", "Phone");
+            dgvUsers.Columns.Add("Role", "Role");
+            dgvUsers.Columns.Add("CreatedDate", "Joined Date");
 
-            // Source aur destination mandatory fields hain
-            if (string.IsNullOrEmpty(source) || string.IsNullOrEmpty(dest))
+            // Hide ID column — used internally for update/delete
+            dgvUsers.Columns["UserID"].Visible = false;
+            dgvUsers.Rows.Clear();
+
+            try
             {
-                MessageBox.Show("Source aur Destination zaroor bharein!",
+                using (var conn = DatabaseHelper.GetConnection())
+                {
+                    string sql = @"SELECT UserID, FullName, Email, 
+                                  Phone, Role, CreatedDate 
+                                  FROM Users ORDER BY UserID DESC";
+                    using (var cmd = new SQLiteCommand(sql, conn))
+                    using (var reader = cmd.ExecuteReader())
+                        while (reader.Read())
+                            dgvUsers.Rows.Add(
+                                reader[0], reader[1], reader[2],
+                                reader[3], reader[4], reader[5]);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading users: " + ex.Message);
+            }
+
+            // Clear edit fields after reload
+            ClearEditFields();
+        }
+
+        // ── Fires when user selects a row in the users grid ──────────
+        private void dgvUsers_SelectionChanged(object sender, EventArgs e)
+        {
+            if (dgvUsers.SelectedRows.Count == 0) return;
+
+            var row = dgvUsers.SelectedRows[0];
+
+            // Store selected user ID for update/delete
+            selectedUserID = Convert.ToInt32(row.Cells["UserID"].Value);
+
+            // Populate edit fields with selected user data
+            txtEditName.Text = row.Cells["FullName"].Value.ToString();
+            txtEditPhone.Text = row.Cells["Phone"].Value.ToString();
+            cmbEditRole.SelectedItem = row.Cells["Role"].Value.ToString();
+        }
+
+        // ── Update selected user's info in database ───────────────────
+        private void btnUpdateUser_Click(object sender, EventArgs e)
+        {
+            // Check if a user is selected
+            if (selectedUserID == 0)
+            {
+                MessageBox.Show("Please select a user to update!",
+                    "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            string name = txtEditName.Text.Trim();
+            string phone = txtEditPhone.Text.Trim();
+            string role = cmbEditRole.SelectedItem?.ToString();
+
+            // Validate input fields
+            if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(phone))
+            {
+                MessageBox.Show("Name and Phone cannot be empty!",
                     "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
@@ -118,14 +183,133 @@ namespace TicketBookingSystem.Forms
             {
                 using (var conn = DatabaseHelper.GetConnection())
                 {
-                    // Naya route database mein insert karo
+                    // Update user record in database
+                    string sql = @"UPDATE Users 
+                                  SET FullName=@name, Phone=@phone, Role=@role
+                                  WHERE UserID=@id";
+
+                    using (var cmd = new SQLiteCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@name", name);
+                        cmd.Parameters.AddWithValue("@phone", phone);
+                        cmd.Parameters.AddWithValue("@role", role);
+                        cmd.Parameters.AddWithValue("@id", selectedUserID);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                MessageBox.Show("User updated successfully! ✅", "Success",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                // Reload grid to reflect changes
+                LoadAllUsers();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error updating user: " + ex.Message);
+            }
+        }
+
+        // ── Delete selected user from database ────────────────────────
+        private void btnDeleteUser_Click(object sender, EventArgs e)
+        {
+            if (dgvUsers.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Please select a user to delete!",
+                    "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Prevent admin account from being deleted
+            string role = dgvUsers.SelectedRows[0]
+                .Cells["Role"].Value.ToString();
+            if (role == "Admin")
+            {
+                MessageBox.Show("Admin user cannot be deleted!",
+                    "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Show confirmation dialog before deleting
+            var result = MessageBox.Show(
+                "Are you sure you want to delete this user?",
+                "Confirm Delete",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (result == DialogResult.Yes)
+            {
+                int userID = Convert.ToInt32(
+                    dgvUsers.SelectedRows[0].Cells["UserID"].Value);
+
+                try
+                {
+                    using (var conn = DatabaseHelper.GetConnection())
+                    {
+                        string sql = "DELETE FROM Users WHERE UserID = @id";
+                        using (var cmd = new SQLiteCommand(sql, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@id", userID);
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+
+                    MessageBox.Show("User deleted successfully! ✅", "Success",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    // Reload grid after deletion
+                    LoadAllUsers();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error deleting user: " + ex.Message);
+                }
+            }
+        }
+
+        // ── Refresh users grid manually ───────────────────────────────
+        private void btnRefreshUsers_Click(object sender, EventArgs e)
+        {
+            LoadAllUsers();
+        }
+
+        // ── Clear all edit input fields ───────────────────────────────
+        private void ClearEditFields()
+        {
+            selectedUserID = 0;
+            txtEditName.Text = "";
+            txtEditPhone.Text = "";
+            cmbEditRole.SelectedIndex = -1;
+        }
+
+        // ── Add a new route to the database ──────────────────────────
+        private void btnAddRoute_Click(object sender, EventArgs e)
+        {
+            string source = txtSource.Text.Trim();
+            string dest = txtDestination.Text.Trim();
+            string distance = txtDistance.Text.Trim();
+            string duration = txtDuration.Text.Trim();
+            string category = cmbRouteCategory.SelectedItem?.ToString();
+
+            // Source and destination are required fields
+            if (string.IsNullOrEmpty(source) || string.IsNullOrEmpty(dest))
+            {
+                MessageBox.Show("Source and Destination are required!",
+                    "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            try
+            {
+                using (var conn = DatabaseHelper.GetConnection())
+                {
+                    // Insert new route using parameterized query
                     string sql = @"INSERT INTO Routes
                         (Source, Destination, Distance, Duration, Category)
                         VALUES (@src, @dst, @dist, @dur, @cat)";
 
                     using (var cmd = new SQLiteCommand(sql, conn))
                     {
-                        // Parameterized query — SQL injection se bachao
                         cmd.Parameters.AddWithValue("@src", source);
                         cmd.Parameters.AddWithValue("@dst", dest);
                         cmd.Parameters.AddWithValue("@dist", distance);
@@ -135,10 +319,10 @@ namespace TicketBookingSystem.Forms
                     }
                 }
 
-                MessageBox.Show("Route add ho gaya! ✅", "Success",
+                MessageBox.Show("Route added successfully! ✅", "Success",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                // Form fields clear karo aur grid refresh karo
+                // Clear input fields and refresh grid
                 txtSource.Clear();
                 txtDestination.Clear();
                 txtDistance.Clear();
@@ -147,27 +331,29 @@ namespace TicketBookingSystem.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error: " + ex.Message);
+                MessageBox.Show("Error adding route: " + ex.Message);
             }
         }
 
+        // ── Delete selected route from database ───────────────────────
         private void btnDeleteRoute_Click(object sender, EventArgs e)
         {
-            // Pehle check karo ke koi route selected hai
             if (dgvRoutes.SelectedRows.Count == 0)
             {
-                MessageBox.Show("Pehle koi route select karein!",
+                MessageBox.Show("Please select a route to delete!",
                     "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            // Delete confirmation dialog dikhao
-            var result = MessageBox.Show("Kya aap yeh route delete karna chahte hain?",
-                "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            // Confirm before deleting
+            var result = MessageBox.Show(
+                "Are you sure you want to delete this route?",
+                "Confirm Delete",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
 
             if (result == DialogResult.Yes)
             {
-                // Selected row se RouteID lo
                 int routeID = Convert.ToInt32(
                     dgvRoutes.SelectedRows[0].Cells["RouteID"].Value);
 
@@ -175,7 +361,6 @@ namespace TicketBookingSystem.Forms
                 {
                     using (var conn = DatabaseHelper.GetConnection())
                     {
-                        // Route database se delete karo
                         string sql = "DELETE FROM Routes WHERE RouteID = @id";
                         using (var cmd = new SQLiteCommand(sql, conn))
                         {
@@ -184,28 +369,28 @@ namespace TicketBookingSystem.Forms
                         }
                     }
 
-                    MessageBox.Show("Route delete ho gaya! ✅", "Success",
+                    MessageBox.Show("Route deleted successfully! ✅", "Success",
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                    // Grid refresh karo — deleted route remove ho jaye
+                    // Refresh grid after deletion
                     LoadRoutes();
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Error: " + ex.Message);
+                    MessageBox.Show("Error deleting route: " + ex.Message);
                 }
             }
         }
 
+        // ── Close admin panel and return to dashboard ─────────────────
         private void btnBack_Click(object sender, EventArgs e)
         {
-            // Admin panel band karo — dashboard par wapas jao
             this.Close();
         }
 
-        private void dgvRoutes_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-            // Future use ke liye — route cell click event
-        }
+        // ── Placeholder for future route cell click handling ──────────
+        private void dgvRoutes_CellContentClick(object sender,
+            DataGridViewCellEventArgs e)
+        { }
     }
 }

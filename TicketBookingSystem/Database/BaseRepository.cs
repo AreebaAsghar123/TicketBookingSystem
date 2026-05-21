@@ -5,7 +5,7 @@ namespace TicketBookingSystem.Database
 {
     public class BaseRepository
     {
-        // INSERT, UPDATE, DELETE ke liye
+        // for INSERT, UPDATE, DELETE 
         protected int ExecuteNonQuery(string sql,
             SQLiteParameter[] parameters = null)
         {
@@ -18,7 +18,7 @@ namespace TicketBookingSystem.Database
             }
         }
 
-        // Single value ke liye — jaise COUNT(*)
+        // for single value — like COUNT(*)
         protected object ExecuteScalar(string sql,
             SQLiteParameter[] parameters = null)
         {
@@ -31,7 +31,7 @@ namespace TicketBookingSystem.Database
             }
         }
 
-        // Multiple rows ke liye
+        // for multiple rows
         protected SQLiteDataReader ExecuteReader(string sql,
             SQLiteParameter[] parameters = null)
         {

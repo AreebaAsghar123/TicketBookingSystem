@@ -5,6 +5,10 @@ using TicketBookingSystem.Models;
 
 namespace TicketBookingSystem.Forms
 {
+    /// <summary>
+    /// MainDashboard — Central navigation hub after successful login
+    /// Provides access to Search, Bookings, Admin Panel and Logout
+    /// </summary>
     public partial class MainDashboard : Form
     {
         public MainDashboard()
@@ -12,53 +16,72 @@ namespace TicketBookingSystem.Forms
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Displays welcome message with logged-in user's name
+        /// </summary>
         private void MainDashboard_Load(object sender, EventArgs e)
         {
-            // Logged-in user ka naam welcome label mein dikhao
+            // Show personalized welcome message from session
             if (Session.CurrentUser != null)
-                lblWelcome.Text = $"Welcome, {Session.CurrentUser.FullName}! 👋";
+                lblWelcome.Text =
+                    $"Welcome, {Session.CurrentUser.FullName}! 👋";
         }
 
+        /// <summary>
+        /// Opens the Search Tickets form
+        /// </summary>
         private void btnSearch_Click(object sender, EventArgs e)
         {
-            // Search Tickets form open karo
             SearchTicketsForm search = new SearchTicketsForm();
             search.Show();
         }
 
+        /// <summary>
+        /// Opens Admin Panel for admin users
+        /// Shows feedback message for regular passengers
+        /// </summary>
         private void btnFeedback_Click(object sender, EventArgs e)
         {
-            // Role check karo — Admin ho to Admin Panel, warna Feedback
+            // Check user role — Admin gets Admin Panel, Passenger gets Feedback
             if (Session.CurrentUser.IsAdmin)
             {
-                // Admin user — Admin Panel open karo
+                // Admin user — open Admin Panel
                 AdminPanelForm admin = new AdminPanelForm();
                 admin.Show();
             }
             else
             {
-                // Passenger user — Feedback coming soon
+                // Passenger user — Feedback feature coming soon
                 MessageBox.Show("Feedback — Coming Soon! ⭐",
                     "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
+        /// <summary>
+        /// Opens the Booking History form for current user
+        /// </summary>
         private void btnMyBookings_Click(object sender, EventArgs e)
         {
-            // Booking history form open karo
             BookingHistoryForm history = new BookingHistoryForm();
             history.Show();
         }
 
+        /// <summary>
+        /// Logs out the current user after confirmation
+        /// Clears session and returns to Login form
+        /// </summary>
         private void btnLogout_Click(object sender, EventArgs e)
         {
-            // Logout confirmation dialog dikhao
-            var result = MessageBox.Show("Logout karna chahte hain?",
-                "Logout", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            // Ask user to confirm before logging out
+            var result = MessageBox.Show(
+                "Are you sure you want to logout?",
+                "Logout",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
 
             if (result == DialogResult.Yes)
             {
-                // Session clear karo aur login form wapas kholo
+                // Clear session data and return to login screen
                 Session.Clear();
                 LoginForm login = new LoginForm();
                 login.Show();
@@ -66,9 +89,11 @@ namespace TicketBookingSystem.Forms
             }
         }
 
+        /// <summary>
+        /// Exits the entire application when dashboard is closed
+        /// </summary>
         private void MainDashboard_FormClosed(object sender, FormClosedEventArgs e)
         {
-            // Dashboard band hone par poori application exit karo
             Application.Exit();
         }
     }

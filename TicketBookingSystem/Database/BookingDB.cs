@@ -10,12 +10,12 @@ namespace TicketBookingSystem.Database
     public class BookingDB : BaseRepository
     {
         /// <summary>
-        /// Naya booking record database mein save karta hai
+        /// save new booking record in database
         /// </summary>
         public bool AddBooking(int userId, int ticketId,
             string seatNumber, string passengerName, double fare)
         {
-            // Booking status default 'Active' set hoti hai
+            //set Booking status default 'Active'  
             string sql = @"INSERT INTO Bookings
                           (UserID, TicketID, SeatNumber, PassengerName,
                           BookingDate, Status, TotalFare)
@@ -36,12 +36,12 @@ namespace TicketBookingSystem.Database
         }
 
         /// <summary>
-        /// Specific user ki saari bookings laata hai
-        /// Latest booking pehle dikhata hai
+        /// Retrieves all bookings of a specific user
+        /// Displays the latest booking first
         /// </summary>
         public List<object[]> GetUserBookings(int userId)
         {
-            // Tickets aur Routes se JOIN karke poori detail laata hai
+            // Joins Tickets and Routes to retrieve complete details
             string sql = @"SELECT b.BookingID, r.Source, r.Destination,
                           t.DepartureDate, t.DepartureTime,
                           b.SeatNumber, b.TotalFare, b.Status
@@ -71,11 +71,11 @@ namespace TicketBookingSystem.Database
         }
 
         /// <summary>
-        /// Booking cancel karta hai — Status 'Cancelled' set karta hai
+        /// Cancels the booking — sets the status to 'Cancelled'
         /// </summary>
         public bool CancelBooking(int bookingId)
         {
-            // Booking delete nahi karte — sirf status update karte hain
+            // Does not delete the booking — only updates the status
             string sql = @"UPDATE Bookings 
                           SET Status = 'Cancelled'
                           WHERE BookingID = @id";
@@ -88,11 +88,11 @@ namespace TicketBookingSystem.Database
         }
 
         /// <summary>
-        /// Admin ke liye saari bookings laata hai — sabhi users ki
+        /// Retrieves all bookings for the admin — including bookings of all users
         /// </summary>
         public List<object[]> GetAllBookings()
         {
-            // Users, Tickets aur Routes teeno se JOIN kiya hai
+            // Joined Users, Tickets, and Routes tables to retrieve complete information
             string sql = @"SELECT b.BookingID, u.FullName,
                           r.Source, r.Destination,
                           t.DepartureDate, b.SeatNumber,

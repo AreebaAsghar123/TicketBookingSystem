@@ -1,20 +1,20 @@
 namespace TicketBookingSystem.Models
 {
     /// <summary>
-    /// User model — logged-in user ki info yahan store hogi
+    /// User model — stores information of the logged-in user
+    /// Used throughout the application via Session class
     /// </summary>
     public class User
     {
-        public int    UserID   { get; set; }
+        public int UserID { get; set; }
         public string FullName { get; set; }
-        public string Email    { get; set; }
-        public string Phone    { get; set; }
-        public string Role     { get; set; } // "Passenger" or "Admin"
+        public string Email { get; set; }
+        public string Phone { get; set; }
 
-        // Ye property check karta hai ke user Admin hai ya nahi
+        // Role defines access level — "Passenger" or "Admin"
+        public string Role { get; set; }
+
+        // Returns true if the user has Admin role
         public bool IsAdmin => Role == "Admin";
     }
-
-    // ── Session — logged-in user ko poore app mein accessible rakhta hai ──
-  
 }
